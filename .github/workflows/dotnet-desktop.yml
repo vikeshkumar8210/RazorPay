@@ -24,8 +24,8 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
-    - name: Build the solution
-      run: dotnet build --configuration Release
+    - name: Build the solution (x86)
+      run: dotnet build RazorPay.sln --configuration Release -p:Platform="x86"
 
     - name: Run tests
       run: dotnet test --no-build --verbosity normal
