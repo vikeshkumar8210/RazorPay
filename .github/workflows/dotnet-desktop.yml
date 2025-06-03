@@ -8,26 +8,27 @@ on:
 
 jobs:
   build:
-
     runs-on: windows-latest
+
+    env:
+      Solution_Name: 'RazorPay.sln'
+      Configuration: 'Release'
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x'  # Change this based on your project
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.3.1
 
-    - name: Restore dependencies
-      run: dotnet restore
+    - name: Restore NuGet packages
+      run: msbuild ${{ env.Solution_Name }} /t:Restore /p:Configuration=${{ env.Configuration }}
 
     - name: Build solution
-      run: dotnet build --configuration Release --no-restore
+      run: msbuild ${{ env.Solution_Name }} /p:Configuration=${{ env.Configuration }}
 
     - name: Run tests
-      run: dotnet test --no-build --verbosity normal
+      run: msbuild ${{ env.Solution_Name }} /p:Configuration=${{ env.Configuration }} /t:Test
 
     - name: Publish application
-      run: dotnet publish YourWinFormsProject.csproj --configuration Release --output ./publish
+      run: msbuild ${{ env.Solution_Name }} /p:Configuration=${{ env.Configuration }} /t:Publish
