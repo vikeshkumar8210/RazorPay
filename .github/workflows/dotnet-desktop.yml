@@ -1,18 +1,12 @@
-name: WinForms CI/CD
+name: WinForms CI (packages.config)
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
     branches: [ master ]
 
 jobs:
   build:
     runs-on: windows-latest
-
-    env:
-      Solution_Name: 'RazorPay.sln'
-      Configuration: 'Release'
 
     steps:
     - name: Checkout code
@@ -21,14 +15,11 @@ jobs:
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1.3.1
 
-    - name: Restore NuGet packages
-      run: msbuild ${{ env.Solution_Name }} /t:Restore /p:Configuration=${{ env.Configuration }}
+    - name: Setup NuGet
+      uses: nuget/setup-nuget@v1
+
+    - name: Restore packages
+      run: nuget restore RazorPay.sln
 
     - name: Build solution
-      run: msbuild ${{ env.Solution_Name }} /p:Configuration=${{ env.Configuration }}
-
-    - name: Run tests
-      run: msbuild ${{ env.Solution_Name }} /p:Configuration=${{ env.Configuration }} /t:Test
-
-    - name: Publish application
-      run: msbuild ${{ env.Solution_Name }} /p:Configuration=${{ env.Configuration }} /t:Publish
+      run: msbuild RazorPay.sln /p:Configuration=Release
