@@ -1,8 +1,12 @@
-name: WinForms CI (packages.config)
+name: WinForms CI/CD
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build:
@@ -12,14 +16,31 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1.3.1
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '6.0'
 
-    - name: Setup NuGet
-      uses: nuget/setup-nuget@v1
+    - name: Restore dependencies
+      run: dotnet restore
 
-    - name: Restore packages
-      run: nuget restore RazorPay.sln
+    - name: Build the solution
+      run: dotnet build --configuration Release
 
-    - name: Build solution
-      run: msbuild RazorPay.sln /p:Configuration=Release
+    - name: Run tests
+      run: dotnet test --no-build --verbosity normal
+
+    - name: Publish the application
+      run: dotnet publish RazorPay.sln -c Release -o publish/
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v1.0.${{ github.run_number }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload .exe to Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: publish/**/*.exe
